@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Buena Fe - Confirmación de Jugadores</title>
+    <meta name="description"
+        content="Formulario oficial de inscripción y confirmación de jugadores para el Torneo AFEMEC.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Librería para generar PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <main class="container">
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🏆</span>
+                <h1>AFEMEC</h1>
+            </div>
+            <h2>Lista de Buena Fe</h2>
+            <p>Confirmación oficial de jugadores para la temporada 2026</p>
+        </header>
+
+        <section class="form-card">
+            <form id="playerForm">
+                <div class="form-grid">
+                    <!-- Datos Personales -->
+                    <div class="form-section full-width">
+                        <h3><span class="step-num">1</span> Datos Personales</h3>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="fullName">Nombre Completo (Jugador)</label>
+                        <input type="text" id="fullName" name="fullName" placeholder="Ej: Juan Pérez" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="dni">Cédula de Identidad / DNI</label>
+                        <input type="text" id="dni" name="dni" placeholder="0.000.000" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="phone">Teléfono de Contacto</label>
+                        <input type="tel" id="phone" name="phone" placeholder="Ej: 0981 123 456" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="email">Correo Electrónico</label>
+                        <input type="email" id="email" name="email" placeholder="ejemplo@correo.com" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="playerType">Tipo de Jugador</label>
+                        <select id="playerType" name="playerType" required>
+                            <option value="" disabled selected>Seleccione tipo</option>
+                            <option value="socio">Socio</option>
+                            <option value="conyuge">Cónyuge</option>
+                            <option value="adherente">Adherente</option>
+                        </select>
+                    </div>
+
+                    <!-- Sección de Autorización (Solo para Adherente/Cónyuge) -->
+                    <div id="authorizationSection" class="form-section full-width hidden-section">
+                        <div class="auth-message-box">
+                            <p id="authTextContent">
+                                Yo <span class="placeholder-field" id="p_socio_name">__________</span> Socio/a de Afemec
+                                con número de CI <span class="placeholder-field" id="p_socio_dni">__________</span>,
+                                número de teléfono <span class="placeholder-field" id="p_socio_phone">__________</span>.
+                                Autorizo a <span class="placeholder-field" id="p_player_name">__________</span> con CI
+                                <span class="placeholder-field" id="p_player_dni">__________</span>. A poder participar
+                                en el torneo de fútbol de Afemec.
+                            </p>
+                        </div>
+                        <div class="form-grid" style="margin-top: 1rem;">
+                            <div class="input-group">
+                                <label for="socioName">Nombre del Socio Autorizante</label>
+                                <input type="text" id="socioName" name="socioName"
+                                    placeholder="Nombre completo del socio">
+                            </div>
+                            <div class="input-group">
+                                <label for="socioDni">CI del Socio</label>
+                                <input type="text" id="socioDni" name="socioDni" placeholder="CI del socio">
+                            </div>
+                            <div class="input-group">
+                                <label for="socioPhone">Teléfono del Socio</label>
+                                <input type="tel" id="socioPhone" name="socioPhone" placeholder="Teléfono del socio">
+                            </div>
+                            <div class="input-group">
+                                <label for="dniSocioFile">Foto Cédula del Socio</label>
+                                <input type="file" id="dniSocioFile" name="dniSocioFile" accept="image/*">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="dniPlayerFile">Foto Cédula (Jugador)</label>
+                        <input type="file" id="dniPlayerFile" name="dniPlayerFile" accept="image/*" required>
+                    </div>
+
+                    <!-- Datos del Equipo -->
+                    <div class="form-section full-width">
+                        <h3><span class="step-num">2</span> Información Deportiva</h3>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="teamName">Nombre del Equipo</label>
+                        <select id="teamName" name="teamName" required>
+                            <option value="" disabled selected>Seleccione su equipo</option>
+                            <option value="liquidaciones">LIQUIDACIONES</option>
+                            <option value="educacion_superior">EDUCACION SUPERIOR</option>
+                            <option value="secundaria">SECUNDARIA</option>
+                            <option value="educadores_unidos">EDUCADORES UNIDOS</option>
+                            <option value="presupuesto">PRESUPUESTO</option>
+                            <option value="afemec">AFEMEC</option>
+                            <option value="supervision_mr_alonso">SUPERVISION M.R. ALONSO</option>
+                            <option value="escuela_de_futbol">ESCUELA DE FUTBOL</option>
+                            <option value="acad_de_taekwondo">ACAD. DE TAEKWONDO</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="category">Categoría</label>
+                        <select id="category" name="category" required>
+                            <option value="" disabled selected>Seleccione categoría</option>
+                            <option value="senior">Senior</option>
+                            <option value="master">Master</option>
+                            <option value="ejecutivo">Ejecutivo</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="jerseyNumber">Número de Camiseta</label>
+                        <input type="number" id="jerseyNumber" name="jerseyNumber" min="1" max="99" placeholder="00">
+                    </div>
+
+                    <!-- Confirmación -->
+                    <div class="form-section full-width">
+                        <h3><span class="step-num">3</span> Confirmación de Buena Fe</h3>
+                    </div>
+
+                    <div class="checkbox-group full-width">
+                        <input type="checkbox" id="terms" name="terms" required>
+                        <label for="terms">
+                            Confirmo que los datos proporcionados son veraces y acepto el reglamento del torneo AFEMEC.
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        <span>Confirmar Inscripción</span>
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="currentColor" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <footer class="footer">
+            <p>&copy; 2026 AFEMEC - Todos los derechos reservados.</p>
+        </footer>
+    </main>
+
+    <div id="toast" class="toast">¡Registro exitoso!</div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

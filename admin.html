@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Lista de Buena Fe</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Librería para Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* LOGIN OVERLAY */
+        #loginOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: #1e293b;
+            padding: 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            border: 1px solid #334155;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .login-card input {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: white;
+            margin-top: 10px;
+            width: 200px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* DASHBOARD */
+        .dashboard {
+            display: none;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 1rem;
+        }
+
+        /* STATS GRID */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid #334155;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-card h3 {
+            margin: 0;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .stat-card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* TABLE */
+        .table-container {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 1px solid #334155;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+        }
+
+        th {
+            background: #1e293b;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-team {
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+        }
+
+        .badge-cat {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .actions {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-bar {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: white;
+            flex-grow: 1;
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* MODAL STYLES */
+        .modal {
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #1e293b;
+            padding: 2rem;
+            border: 1px solid #334155;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            color: #94a3b8;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: #f8fafc;
+        }
+
+        .modal-body p {
+            margin: 0.5rem 0;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 0.5rem;
+        }
+
+        .modal-label {
+            font-weight: 600;
+            color: #94a3b8;
+            display: inline-block;
+            width: 120px;
+        }
+
+        .dni-preview {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .dni-preview img {
+            max-width: 100%;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .dni-preview img:hover {
+            transform: scale(1.02);
+        }
+
+        .dni-preview span {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginOverlay">
+        <div class="login-card">
+            <h2>🔒 Acceso Admin</h2>
+            <input type="password" id="adminPass" placeholder="Contraseña">
+            <button class="btn" onclick="login()">Ingresar</button>
+            <p id="loginError" style="color: #ef4444; margin-top: 10px; display: none;">Contraseña incorrecta</p>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="dashboard" class="dashboard">
+        <header>
+            <div>
+                <h1>Panel de Administración</h1>
+                <p style="color: #94a3b8;">Sistema de Inscripciones AFEMEC</p>
+            </div>
+            <button class="btn" onclick="logout()" style="background: #ef4444;">Salir</button>
+        </header>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Inscritos</h3>
+                <div class="value" id="totalCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Equipos Registrados</h3>
+                <div class="value" id="teamCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Categoría Popular</h3>
+                <div class="value" style="font-size: 1.5rem;" id="topCategory">-</div>
+            </div>
+        </div>
+
+        <!-- Filters & Actions -->
+        <div class="actions">
+            <div class="filters">
+                <select id="filterCategory" class="search-bar" style="width: auto;">
+                    <option value="">Todas las Categorías</option>
+                    <option value="senior">Senior</option>
+                    <option value="master">Master</option>
+                    <option value="ejecutivo">Ejecutivo</option>
+                </select>
+                <select id="filterTeam" class="search-bar" style="width: auto;">
+                    <option value="">Todos los Equipos</option>
+                    <option value="liquidaciones">LIQUIDACIONES</option>
+                    <option value="educacion_superior">EDUCACION SUPERIOR</option>
+                    <option value="secundaria">SECUNDARIA</option>
+                    <option value="educadores_unidos">EDUCADORES UNIDOS</option>
+                    <option value="presupuesto">PRESUPUESTO</option>
+                    <option value="afemec">AFEMEC</option>
+                    <option value="supervision_mr_alonso">SUPERVISION M.R. ALONSO</option>
+                    <option value="escuela_de_futbol">ESCUELA DE FUTBOL</option>
+                    <option value="acad_de_taekwondo">ACAD. DE TAEKWONDO</option>
+                </select>
+            </div>
+            <input type="text" id="searchInput" class="search-bar" placeholder="Buscar por nombre, cédula...">
+            <button class="btn" onclick="fetchPlayers()">🔄 Actualizar</button>
+            <div style="display: flex; gap: 5px;">
+                <button class="btn" onclick="exportToExcel()" style="background: #10b981;">📊 Exportar</button>
+                <button class="btn" onclick="document.getElementById('importExcel').click()"
+                    style="background: #f59e0b;">📥 Importar</button>
+                <input type="file" id="importExcel" style="display: none;" accept=".xlsx, .xls">
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Foto</th>
+                        <th>Nombre</th>
+                        <th>C.I.</th>
+                        <th>Equipo</th>
+                        <th>Categoría</th>
+                        <th>Tipo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="playersTableBody">
+                    <!-- Rows will be injected here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Details Modal -->
+        <div id="detailsModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+                <h2>👤 Detalles del Jugador</h2>
+                <div id="modalBody" class="modal-body">
+                    <!-- Details injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js?v=1.1"></script>
+</body>
+
+</html>
