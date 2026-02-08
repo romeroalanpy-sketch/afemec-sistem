@@ -111,15 +111,45 @@ if (isPostgres) {
     db.run(`ALTER TABLE players ADD COLUMN dniSocioPath TEXT`, (err) => { });
 }
 
+// Helper para mapear nombres de columnas de Postgres (minúsculas) a camelCase (esperado por el frontend)
+function mapPgRow(row) {
+    if (!row) return row;
+    const mapped = {};
+    for (const key in row) {
+        const camelKey = {
+            'fullname': 'fullName',
+            'playertype': 'playerType',
+            'teamname': 'teamName',
+            'jerseynumber': 'jerseyNumber',
+            'socioname': 'socioName',
+            'sociodni': 'socioDni',
+            'sociophone': 'socioPhone',
+            'dniplayerpath': 'dniPlayerPath',
+            'dnisociopath': 'dniSocioPath',
+            'createdat': 'createdAt'
+        }[key.toLowerCase()] || key;
+        let value = row[key];
+        // Convertir counts de Postgres (bigint strings) a Numbers
+        if (key.toLowerCase() === 'count' || key.toLowerCase() === 'total') {
+            value = Number(value);
+        }
+        mapped[camelKey] = value;
+    }
+    return mapped;
+}
+
 // Helper para consultas compatibles
 async function dbRun(sql, params = []) {
     if (isPostgres) {
-        // Convertir ? a $1, $2, etc.
         let i = 1;
-        const pgSql = sql.replace(/\?/g, () => '$' + (i++));
+        let pgSql = sql.replace(/\?/g, () => '$' + (i++));
+
+        // Si es un INSERT, intentar devolver el ID
+        if (pgSql.trim().toLowerCase().startsWith('insert')) {
+            pgSql += ' RETURNING id';
+        }
+
         const res = await pgClient.query(pgSql, params);
-        // Para INSERT, Postgres devuelve 'rows' si usamos RETURNING id. 
-        // Si no, no tenemos ID fácil. Asumiremos que el frontend no muere sin ID.
         return { lastID: res.rows[0]?.id || 0 };
     } else {
         return new Promise((resolve, reject) => {
@@ -136,7 +166,7 @@ async function dbAll(sql, params = []) {
         let i = 1;
         const pgSql = sql.replace(/\?/g, () => '$' + (i++));
         const res = await pgClient.query(pgSql, params);
-        return res.rows;
+        return res.rows.map(mapPgRow);
     } else {
         return new Promise((resolve, reject) => {
             db.all(sql, params, (err, rows) => {
@@ -150,7 +180,7 @@ async function dbAll(sql, params = []) {
 async function dbGet(sql, params = []) {
     if (isPostgres) {
         const rows = await dbAll(sql, params);
-        return rows[0];
+        return rows[0] || null;
     } else {
         return new Promise((resolve, reject) => {
             db.get(sql, params, (err, row) => {
@@ -296,6 +326,6 @@ app.get('/admin', (req, res) => {
 // Iniciar servidor
 app.listen(PORT, () => {
     console.log(`\n🚀 Servidor AFEMEC corriendo en http://localhost:${PORT}`);
-    console.log(`📊 Base de datos SQLite activa\n`);
+    console.log(`📊 Base de datos: ${isPostgres ? 'PostgreSQL (Nube)' : 'SQLite (Local)'} activa\n`);
 });
 
